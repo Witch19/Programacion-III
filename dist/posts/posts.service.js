@@ -15,51 +15,63 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PostsService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
+const nestjs_typeorm_paginate_1 = require("nestjs-typeorm-paginate");
 const typeorm_2 = require("typeorm");
 const post_entity_1 = require("./post.entity");
 const category_entity_1 = require("../categories/category.entity");
 let PostsService = class PostsService {
-    postRepository;
-    categoryRepository;
-    constructor(postRepository, categoryRepository) {
-        this.postRepository = postRepository;
-        this.categoryRepository = categoryRepository;
+    postsRepository;
+    categoriesRepository;
+    constructor(postsRepository, categoriesRepository) {
+        this.postsRepository = postsRepository;
+        this.categoriesRepository = categoriesRepository;
     }
     async create(createPostDto) {
-        const category = await this.categoryRepository.findOne({ where: { id: createPostDto.categoryId } });
-        if (!category)
-            throw new common_1.NotFoundException('Categoría no encontrada');
-        const post = this.postRepository.create({
-            title: createPostDto.title,
-            content: createPostDto.content,
-            category,
-        });
-        return this.postRepository.save(post);
-    }
-    findAll() {
-        return this.postRepository.find({ relations: ['category'] });
-    }
-    findOne(id) {
-        return this.postRepository.findOne({ where: { id }, relations: ['category'] });
-    }
-    async update(id, updatePostDto) {
-        const post = await this.postRepository.findOne({ where: { id }, relations: ['category'] });
-        if (!post)
-            throw new common_1.NotFoundException('Post no encontrado');
-        if (updatePostDto.categoryId) {
-            const category = await this.categoryRepository.findOne({ where: { id: updatePostDto.categoryId } });
+        try {
+            const category = await this.categoriesRepository.findOne({ where: { id: createPostDto.categoryId } });
             if (!category)
-                throw new common_1.NotFoundException('Categoría no encontrada');
-            post.category = category;
+                return null;
+            const post = this.postsRepository.create({
+                title: createPostDto.title,
+                content: createPostDto.content,
+                category: category,
+            });
+            return await this.postsRepository.save(post);
         }
-        Object.assign(post, updatePostDto);
-        return this.postRepository.save(post);
+        catch (err) {
+            console.error('Error creating post:', err);
+            return null;
+        }
+    }
+    async findAll(options) {
+        try {
+            const queryBuilder = this.postsRepository.createQueryBuilder('post');
+            queryBuilder.leftJoinAndSelect('post.category', 'category');
+            return await (0, nestjs_typeorm_paginate_1.paginate)(queryBuilder, options);
+        }
+        catch (err) {
+            console.error('Error fetching posts:', err);
+            return null;
+        }
+    }
+    async findOne(id) {
+        try {
+            return await this.postsRepository.findOne({ where: { id }, relations: ['category'] });
+        }
+        catch (err) {
+            console.error('Error fetching post:', err);
+            return null;
+        }
     }
     async remove(id) {
-        const post = await this.postRepository.findOne({ where: { id } });
-        if (!post)
-            throw new common_1.NotFoundException('Post no encontrado');
-        return this.postRepository.remove(post);
+        try {
+            const result = await this.postsRepository.delete(id);
+            return result.affected !== 0;
+        }
+        catch (err) {
+            console.error('Error deleting post:', err);
+            return false;
+        }
     }
 };
 exports.PostsService = PostsService;

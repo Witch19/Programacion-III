@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { CategoriesModule } from './categories/categories.module';
 import { PostsModule } from './posts/posts.module';
+import { MailModule } from './mail/mail.module';
 
 
 @Module({
@@ -21,9 +22,9 @@ import { PostsModule } from './posts/posts.module';
         username: configService.get<string>('DB_USER'),
         password: configService.get<string>('DB_PASS'),
         database: configService.get<string>('DB_NAME'),
-        entities: [__dirname + '/*/.entity{.ts,.js}'],
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: true,
-        ssl: { rejectUnauthorized: false },
+        //ssl: { rejectUnauthorized: false },
       }),
       inject: [ConfigService],
     }),
@@ -31,9 +32,9 @@ import { PostsModule } from './posts/posts.module';
     UsersModule,
     CategoriesModule,
     PostsModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
-  

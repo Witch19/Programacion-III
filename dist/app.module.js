@@ -16,6 +16,7 @@ const auth_module_1 = require("./auth/auth.module");
 const users_module_1 = require("./users/users.module");
 const categories_module_1 = require("./categories/categories.module");
 const posts_module_1 = require("./posts/posts.module");
+const mail_module_1 = require("./mail/mail.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -32,9 +33,8 @@ exports.AppModule = AppModule = __decorate([
                     username: configService.get('DB_USER'),
                     password: configService.get('DB_PASS'),
                     database: configService.get('DB_NAME'),
-                    entities: [__dirname + '/*/.entity{.ts,.js}'],
+                    entities: [__dirname + '/**/*.entity{.ts,.js}'],
                     synchronize: true,
-                    ssl: { rejectUnauthorized: false },
                 }),
                 inject: [config_1.ConfigService],
             }),
@@ -42,6 +42,7 @@ exports.AppModule = AppModule = __decorate([
             users_module_1.UsersModule,
             categories_module_1.CategoriesModule,
             posts_module_1.PostsModule,
+            mail_module_1.MailModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
